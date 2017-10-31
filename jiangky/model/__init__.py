@@ -9,7 +9,7 @@ from sqlalchemy.orm import sessionmaker
 Base = declarative_base()
 
 # 初始化数据库连接:
-engine = create_engine('mysql+pymysql://root:123456@localhost/db_scrapy?charset=utf8', echo = True)
+engine = create_engine('mysql+pymysql://root:123456@localhost:3306/db_scrapy?charset=utf8', echo = True)
 
 #返回数据库会话
 def loadSession():
