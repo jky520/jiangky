@@ -2,7 +2,7 @@
 # Author:@DT人
 import scrapy
 from scrapy.http.cookies import CookieJar
-import selectors
+from scrapy.selector import Selector
 
 class ChoutiSpider(scrapy.Spider):
     """抽屉爬虫"""
@@ -28,9 +28,44 @@ class ChoutiSpider(scrapy.Spider):
         )
 
     def check_login(self, response):
-        print("==============",response.text)
+        # print("==============",response.text)
+        # yield scrapy.Request(url="http://dig.chouti.com/", callback=self.good)
         yield scrapy.Request(url="http://dig.chouti.com/", callback=self.good)
 
+    def cancel(self, response):
+        """取消点赞"""
+        id_list = Selector(response=response).xpath('//div[@share-linkid]/@share-linkid').extract()
+        # print(id_list)
+        for nid in id_list:
+            url = "http://dig.chouti.com/vote/cancel/vote.do?linksId=%s" % nid
+            yield scrapy.Request(
+                url=url,
+                method="POST",
+                cookies=self.cookie_dict,
+                callback=self.show
+            )
+        page_urls = Selector(response=response).xpath("//div[@id='dig_lcpage']//a/@href").extract()
+        for page in page_urls:
+            url = "http://dig.chouti.com%s" % page
+            yield scrapy.Request(url=url, callback=self.cancel)
+
+
     def good(self, response):
-        # selectors.Selector(response=response).
-        pass
+        """点赞"""
+        id_list = Selector(response=response).xpath('//div[@share-linkid]/@share-linkid').extract()
+        # print(id_list)
+        for nid in id_list:
+            url = "http://dig.chouti.com/link/vote?linksId=%s" % nid
+            yield scrapy.Request(
+                url=url,
+                method="POST",
+                cookies=self.cookie_dict,
+                callback=self.show
+            )
+        page_urls = Selector(response=response).xpath("//div[@id='dig_lcpage']//a/@href").extract()
+        for page in page_urls:
+            url = "http://dig.chouti.com%s" % page
+            yield scrapy.Request(url=url, callback=self.good)
+
+    def show(self,response):
+        print(response.text)
