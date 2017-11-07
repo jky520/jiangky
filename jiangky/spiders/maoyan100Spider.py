@@ -30,7 +30,7 @@ def parse_one_page(html):
         }
 def write_to_file(content):
     """写入到文件中去"""
-    with open('result.txt','a') as f:
+    with open('result.txt','a', encoding='utf-8') as f:
         f.write(json.dumps(content + '\n'))
         f.close()
 
